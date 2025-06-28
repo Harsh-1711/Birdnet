@@ -848,7 +848,7 @@ def save_linear_classifier(classifier, model_path: str, labels: list[str], mode=
     classifier.pop()
 
     if mode == "replace":
-        embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="serving_default")
+        embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="embeddings")
 
         combined_model = tf.keras.Sequential([
         embedding_layer,
@@ -920,7 +920,7 @@ def save_raven_model(classifier, model_path: str, labels: list[str], mode="repla
     saved_model = PBMODEL
 
     if mode == "replace":
-        embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="serving_default")
+        embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="embeddings")
 
         combined_model = tf.keras.Sequential([
         embedding_layer,
