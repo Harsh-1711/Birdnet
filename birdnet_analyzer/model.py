@@ -822,6 +822,7 @@ def train_linear_classifier(
     )
 
     return classifier, history
+EMBEDDING_SIZE = 1024  # You can verify this from model.get_input_details() if unsure
 
 def save_linear_classifier(classifier, model_path: str, labels: list[str], mode="replace"):
     """Saves the classifier as a tflite model, as well as the used labels in a .txt."""
@@ -845,7 +846,7 @@ def save_linear_classifier(classifier, model_path: str, labels: list[str], mode=
         embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="embeddings")
 
         # Wrap in functional API to avoid Sequential + TFSMLayer issues
-        inputs = tf.keras.Input(shape=(cfg.EMBEDDING_SIZE,), name="embedding_input")
+        inputs = tf.keras.Input(shape=(EMBEDDING_SIZE,), name="embedding_input")
         outputs = classifier(inputs)
         classifier_model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
