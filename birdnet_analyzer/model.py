@@ -6,6 +6,7 @@ import sys
 import warnings
 
 import numpy as np
+import tensorflow as tf
 
 import birdnet_analyzer.config as cfg
 from birdnet_analyzer import utils
@@ -537,7 +538,7 @@ def load_model(class_output=True):
         # Load protobuf model
         # Note: This will throw a bunch of warnings about custom gradients
         # which we will ignore until TF lets us block them
-        PBMODEL = keras.models.load_model(os.path.join(SCRIPT_DIR, cfg.MODEL_PATH), compile=False)
+        PBMODEL = tf.saved_model.load(os.path.join(SCRIPT_DIR, cfg.MODEL_PATH), compile=False)
 
 
 def load_custom_classifier():
