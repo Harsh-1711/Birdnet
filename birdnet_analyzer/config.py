@@ -16,10 +16,12 @@ RANDOM_SEED: int = 42
 MODEL_VERSION: str = "V2.4"
 PB_MODEL: str = os.path.join(SCRIPT_DIR, "checkpoints/V2.4/BirdNET_GLOBAL_6K_V2.4_Model")
 # MODEL_PATH = PB_MODEL # This will load the protobuf model
-MODEL_PATH: str = os.path.join(SCRIPT_DIR, "checkpoints/V2.4/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite")
+MODEL_PATH = '/kaggle/working/BirdNET_GLOBAL_6K_V2.4_Model/model.tflite'
 MDATA_MODEL_PATH: str = os.path.join(SCRIPT_DIR, "checkpoints/V2.4/BirdNET_GLOBAL_6K_V2.4_MData_Model_V2_FP16.tflite")
 LABELS_FILE: str = os.path.join(SCRIPT_DIR, "checkpoints/V2.4/BirdNET_GLOBAL_6K_V2.4_Labels.txt")
 TRANSLATED_LABELS_PATH: str = os.path.join(SCRIPT_DIR, "labels/V2.4")
+# MODEL_PATH_TFLITE = 
+
 
 ##################
 # Audio settings #
