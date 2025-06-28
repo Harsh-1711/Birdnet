@@ -1202,14 +1202,17 @@ def embeddings(sample):
     model_path = cfg.MODEL_PATH_TFLITE  # Or hardcode path if needed
     sample = np.array(sample, dtype="float32")
 
-    # Create a new local interpreter instance
     interpreter = Interpreter(model_path=model_path)
+
+    input_details = interpreter.get_input_details()
+    INPUT_LAYER_INDEX = input_details[0]['index']
     interpreter.resize_tensor_input(INPUT_LAYER_INDEX, [len(sample), *sample[0].shape])
     interpreter.allocate_tensors()
+
+    output_details = interpreter.get_output_details()
+    OUTPUT_LAYER_INDEX = output_details[0]['index']
 
     interpreter.set_tensor(INPUT_LAYER_INDEX, sample)
     interpreter.invoke()
 
     return interpreter.get_tensor(OUTPUT_LAYER_INDEX)
-
-
