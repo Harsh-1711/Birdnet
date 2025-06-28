@@ -823,62 +823,66 @@ def train_linear_classifier(
 
     return classifier, history
 
-
 def save_linear_classifier(classifier, model_path: str, labels: list[str], mode="replace"):
-    """Saves the classifier as a tflite model, as well as the used labels in a .txt.
+    """Saves the classifier as a tflite model, as well as the used labels in a .txt."""
 
-    Args:
-        classifier: The custom classifier.
-        model_path: Path the model will be saved at.
-        labels: List of labels used for the classifier.
-    """
     import tensorflow as tf
+    from keras.layers import TFSMLayer
 
     global PBMODEL
 
     tf.get_logger().setLevel("ERROR")
 
+    # Load base model if not already loaded
     if PBMODEL is None:
         PBMODEL = tf.saved_model.load(os.path.join(SCRIPT_DIR, cfg.PB_MODEL))
 
-
-    saved_model = PBMODEL
-
-    # Remove activation layer
+    # Remove last activation if needed
     classifier.pop()
 
     if mode == "replace":
+        # Use the 'embeddings' endpoint (you already confirmed it's available)
         embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="embeddings")
 
-        combined_model = tf.keras.Sequential([
-        embedding_layer,
-        classifier
-        ])
-        combined_model.save(cfg.CUSTOM_CLASSIFIER + ".keras")
+        # Wrap in functional API to avoid Sequential + TFSMLayer issues
+        inputs = tf.keras.Input(shape=(cfg.EMBEDDING_SIZE,), name="embedding_input")
+        outputs = classifier(inputs)
+        classifier_model = tf.keras.Model(inputs=inputs, outputs=outputs)
+
+        # Create a wrapper function for conversion
+        @tf.function(input_signature=[tf.TensorSpec(shape=[None, cfg.EMBEDDING_SIZE], dtype=tf.float32)])
+        def inference_fn(x):
+            return classifier_model(x)
+
+        concrete_func = inference_fn.get_concrete_function()
+        converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_func])
+        tflite_model = converter.convert()
 
     elif mode == "append":
-        intermediate = classifier(saved_model.model.get_layer("GLOBAL_AVG_POOL").output)
+        # Assuming you're appending to some output layer
+        intermediate = classifier(PBMODEL.model.get_layer("GLOBAL_AVG_POOL").output)
+        output = tf.keras.layers.concatenate([PBMODEL.model.output, intermediate], name="combined_output")
+        combined_model = tf.keras.Model(inputs=PBMODEL.model.input, outputs=output)
 
-        output = tf.keras.layers.concatenate([saved_model.model.output, intermediate], name="combined_output")
+        # Standard Keras model export for append case
+        converter = tf.lite.TFLiteConverter.from_keras_model(combined_model)
+        tflite_model = converter.convert()
 
-        combined_model = tf.keras.Model(inputs=saved_model.model.input, outputs=output)
     else:
         raise ValueError("Model save mode must be either 'replace' or 'append'")
 
-    # Append .tflite if necessary
+    # Add .tflite extension
     if not model_path.endswith(".tflite"):
         model_path += ".tflite"
 
-    # Make folders
+    # Ensure directory exists
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
 
-    # Save model as tflite
-    converter = tf.lite.TFLiteConverter.from_keras_model(combined_model)
-    tflite_model = converter.convert()
-
+    # Save TFLite model
     with open(model_path, "wb") as f:
         f.write(tflite_model)
 
+    # Append base labels if needed
     if mode == "append":
         labels = [*utils.read_lines(os.path.join(SCRIPT_DIR, cfg.LABELS_FILE)), *labels]
 
@@ -886,8 +890,8 @@ def save_linear_classifier(classifier, model_path: str, labels: list[str], mode=
     with open(model_path.replace(".tflite", "_Labels.txt"), "w", encoding="utf-8") as f:
         f.writelines(label + "\n" for label in labels)
 
+    # Save params (unchanged)
     save_model_params(model_path.replace(".tflite", "_Params.csv"))
-
 
 def save_raven_model(classifier, model_path: str, labels: list[str], mode="replace"):
     """
