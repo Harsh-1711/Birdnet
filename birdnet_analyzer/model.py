@@ -1204,6 +1204,8 @@ def embeddings(sample):
 
     # Reshape input tensor
     INTERPRETER.resize_tensor_input(INPUT_LAYER_INDEX, [len(sample), *sample[0].shape])
+
+    # ✅ Allocate tensors after resize
     INTERPRETER.allocate_tensors()
 
     # Extract feature embeddings
@@ -1211,3 +1213,4 @@ def embeddings(sample):
     INTERPRETER.invoke()
 
     return INTERPRETER.get_tensor(OUTPUT_LAYER_INDEX)
+
