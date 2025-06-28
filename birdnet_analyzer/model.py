@@ -5,6 +5,7 @@ import os
 import sys
 import warnings
 
+from keras.layers import TFSMLayer
 import numpy as np
 import tensorflow as tf
 
@@ -847,7 +848,13 @@ def save_linear_classifier(classifier, model_path: str, labels: list[str], mode=
     classifier.pop()
 
     if mode == "replace":
-        combined_model = tf.keras.Sequential([saved_model.embeddings_model, classifier], "basic")
+        embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="serving_default")
+
+        combined_model = tf.keras.Sequential([
+        embedding_layer,
+        classifier
+        ])
+        combined_model.save(cfg.CUSTOM_CLASSIFIER)
     elif mode == "append":
         intermediate = classifier(saved_model.model.get_layer("GLOBAL_AVG_POOL").output)
 
@@ -913,7 +920,13 @@ def save_raven_model(classifier, model_path: str, labels: list[str], mode="repla
     saved_model = PBMODEL
 
     if mode == "replace":
-        combined_model = tf.keras.Sequential([saved_model.embeddings_model, classifier], "basic")
+        embedding_layer = TFSMLayer(os.path.join(SCRIPT_DIR, cfg.PB_MODEL), call_endpoint="serving_default")
+
+        combined_model = tf.keras.Sequential([
+        embedding_layer,
+        classifier
+        ])
+        combined_model.save(cfg.CUSTOM_CLASSIFIER)
     elif mode == "append":
         # Remove activation layer
         classifier.pop()
