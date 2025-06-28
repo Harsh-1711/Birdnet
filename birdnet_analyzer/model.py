@@ -854,7 +854,8 @@ def save_linear_classifier(classifier, model_path: str, labels: list[str], mode=
         embedding_layer,
         classifier
         ])
-        combined_model.save(cfg.CUSTOM_CLASSIFIER)
+        combined_model.save(cfg.CUSTOM_CLASSIFIER + ".keras")
+
     elif mode == "append":
         intermediate = classifier(saved_model.model.get_layer("GLOBAL_AVG_POOL").output)
 
@@ -926,7 +927,8 @@ def save_raven_model(classifier, model_path: str, labels: list[str], mode="repla
         embedding_layer,
         classifier
         ])
-        combined_model.save(cfg.CUSTOM_CLASSIFIER)
+        combined_model.save(cfg.CUSTOM_CLASSIFIER + ".keras")
+
     elif mode == "append":
         # Remove activation layer
         classifier.pop()
