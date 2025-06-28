@@ -12,6 +12,7 @@ RANDOM_SEED: int = 42
 ##########################
 # Model paths and config #
 ##########################
+EMBEDDING_SIZE = 6362
 
 MODEL_VERSION: str = "V2.4"
 PB_MODEL: str = os.path.join(SCRIPT_DIR, "checkpoints/V2.4/BirdNET_GLOBAL_6K_V2.4_Model")
