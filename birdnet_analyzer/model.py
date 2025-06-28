@@ -9,6 +9,8 @@ import numpy as np
 
 import birdnet_analyzer.config as cfg
 from birdnet_analyzer import utils
+from tensorflow.lite.python.interpreter import Interpreter
+
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -1197,20 +1199,17 @@ def embeddings(sample):
     Returns:
         The embeddings.
     """
-
-    load_model(False)
-
+    model_path = cfg.MODEL_PATH_TFLITE  # Or hardcode path if needed
     sample = np.array(sample, dtype="float32")
 
-    # Reshape input tensor
-    INTERPRETER.resize_tensor_input(INPUT_LAYER_INDEX, [len(sample), *sample[0].shape])
+    # Create a new local interpreter instance
+    interpreter = Interpreter(model_path=model_path)
+    interpreter.resize_tensor_input(INPUT_LAYER_INDEX, [len(sample), *sample[0].shape])
+    interpreter.allocate_tensors()
 
-    # ✅ Allocate tensors after resize
-    INTERPRETER.allocate_tensors()
+    interpreter.set_tensor(INPUT_LAYER_INDEX, sample)
+    interpreter.invoke()
 
-    # Extract feature embeddings
-    INTERPRETER.set_tensor(INPUT_LAYER_INDEX, sample)
-    INTERPRETER.invoke()
+    return interpreter.get_tensor(OUTPUT_LAYER_INDEX)
 
-    return INTERPRETER.get_tensor(OUTPUT_LAYER_INDEX)
 
