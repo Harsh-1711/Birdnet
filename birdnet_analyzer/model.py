@@ -822,7 +822,7 @@ def train_linear_classifier(
     )
 
     return classifier, history
-EMBEDDING_SIZE = 1024  # You can verify this from model.get_input_details() if unsure
+EMBEDDING_SIZE = 6392  # You can verify this from model.get_input_details() if unsure
 
 def save_linear_classifier(classifier, model_path: str, labels: list[str], mode="replace"):
     """Saves the classifier as a tflite model, as well as the used labels in a .txt."""
